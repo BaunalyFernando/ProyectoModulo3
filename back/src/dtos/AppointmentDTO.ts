@@ -1,7 +1,6 @@
 export interface AppointmentRegisterDTO {
     date: Date;
     time: Date;
-    status: Status.Active;
     userId: string;
 }
 
