@@ -1,4 +1,4 @@
-import { PORT } from "./config/envs";
+import { PORT } from "./config/env";
 
 import server from "./server";
 
