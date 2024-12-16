@@ -2,9 +2,9 @@
 import { AppointmentRegisterDTO } from "../dtos/AppointmentDTO";
 import { cancelAppointmentService, createAppointmentService, getAppointmentByIdService, getAppointmentsService } from "../services/appointmentService";
 
- export const getAppointmentsController = (req: Request, res: Response): void => {
+ export const getAppointmentsController = async (req: Request, res: Response): Promise<void> => {
      try{
-        const response = getAppointmentsService();
+        const response = await getAppointmentsService();
            res.status(200).json({
             message: "Appointments Controller",
             data: response
@@ -12,17 +12,17 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
          } catch (error) {
              res.status(400).json({
                 message: "Error getting appointments",
-                data: error
+                data: error instanceof Error ? error.message : "unknown error"
                  });
    }
 }
 
- export const getAppointmentByIdController = (req: Request<{ id: string }>, res: Response): void => {
+ export const getAppointmentByIdController = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
 
     const { id } = req.params;
 
     try{
-        const response = getAppointmentByIdService(Number(id));
+        const response = await getAppointmentByIdService(Number(id));
         res.status(200).json({ 
          message: "Appointment By Id Controller" + id,
          data: response
@@ -30,18 +30,18 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
      } catch (error) {
         res.status(400).json({
             message: "Error getting appointment by id",
-            data: error
+            data: error instanceof Error ? error.message : "unknown error"
      });
     
    }
      
  }
 
- export const scheduleAppointmentController = (req: Request<unknown, unknown, AppointmentRegisterDTO>, res: Response) => {
+ export const scheduleAppointmentController = async (req: Request<unknown, unknown, AppointmentRegisterDTO>, res: Response): Promise<void> => {
 
     const { date, time, userId } = req.body;
      try{
-        const response = createAppointmentService({date, time, userId});
+        const response = await createAppointmentService({date, time, userId});
         res.status(201).json({
             message: "Schedule Appointment Controller",
             data: response
@@ -49,17 +49,17 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
          } catch (error) {
              res.status(400).json({
                 message: "Error scheduling appointment",
-                data: error
+                data: error instanceof Error ? error.message : "unknown error"
             });
          }
 
  }
 
- export const cancelAppointmentController = (req: Request<{ id: string }>, res: Response): void => {
+ export const cancelAppointmentController = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
 
     const { id } = req.params;
     try{
-        const response = cancelAppointmentService(Number(id));
+        const response = await cancelAppointmentService(Number(id));
         res.status(200).json({
             message: "Cancel Appointment Controller" + id,
             data: response
@@ -67,7 +67,7 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
      } catch (error) {
         res.status(400).json({
             message: `Error canceling appointment with id ${id}` ,
-            data: error
+            data: error instanceof Error ? error.message : "unknownn error"
         });
    }
  }

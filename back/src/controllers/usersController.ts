@@ -3,9 +3,9 @@ import { UserLoginDTO, UserRegisterDTO } from "../dtos/UserDTO";
 import { createUserService, getUserByIdService, getUsersService } from "../services/userService";
 import { validateCredentialService } from "../services/credentialService";
  
- export const getUsersController = (req: Request, res: Response) => {
+ export const getUsersController = async (req: Request, res: Response): Promise<void> => {
      try{
-        const response = getUsersService();
+        const response = await getUsersService();
         res.status(200).json({
             message: "Users Controller",
             data: response
@@ -13,16 +13,16 @@ import { validateCredentialService } from "../services/credentialService";
      } catch (error) {
          res.status(400).json({
             message: "Error getting users",
-            data: error
+            data: error instanceof Error ? error.message : "unknow error"
        });
      }
  }
 
- export const getUserByIdController = (req: Request<{ id: string }>, res: Response): void => {
+ export const getUserByIdController = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
    const { id } = req.params;
 
    try{
-        const response = getUserByIdService(Number(id));
+        const response = await getUserByIdService(Number(id));
         res.status(200).json({
             message: "User By Id Controller" + id,
             data: response
@@ -30,15 +30,15 @@ import { validateCredentialService } from "../services/credentialService";
         } catch (error) {
             res.status(400).json({
                 message: `Error getting user by id ${id}`,
-                data: error
+                data: error instanceof Error ? error.message : "unknow error"
                });
         }
  }
 
- export const registerUserController = (req: Request<unknown, unknown, UserRegisterDTO>, res: Response) => {
+ export const registerUserController = async (req: Request<unknown, unknown, UserRegisterDTO>, res: Response): Promise<void> => {
    const { name, email, birthdate, nDni, username, password } = req.body;
    try{
-        const response = createUserService({name, email, birthdate, nDni, username, password});
+        const response = await createUserService({name, email, birthdate, nDni, username, password});
         res.status(201).json({
             message: "Register User Controller",
             data: response
@@ -46,16 +46,16 @@ import { validateCredentialService } from "../services/credentialService";
          } catch (error) {
              res.status(400).json({
                 message: "Error registering user",
-                data: error
+                data: error instanceof Error ? error.message : "unknow error"
             });
          }
  }
 
- export const loginUserController = (req: Request<unknown, unknown, UserLoginDTO>, res: Response) => {
+ export const loginUserController = async (req: Request<unknown, unknown, UserLoginDTO>, res: Response): Promise<void> => {
      const { username, password } = req.body;
 
      try{
-        const response = validateCredentialService({username, password});
+        const response = await validateCredentialService(username, password);
         res.status(200).json({
             message: "Login User Controller",
             data: response
@@ -63,7 +63,7 @@ import { validateCredentialService } from "../services/credentialService";
          } catch (error) {
              res.status(400).json({
                 message: "Error logging in user",
-                data: error
+                data: error instanceof Error ? error.message : "unknow error"
             });
          }
  }

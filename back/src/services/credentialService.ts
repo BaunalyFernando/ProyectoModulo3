@@ -9,35 +9,44 @@ const credential: ICredentials[] = [
     }
 ] 
 
-export const createCredentialService = (credentials: CredentialCreateDTO): number => {
+let id: number = 1;
 
-    if(!credentials.password && !credentials.username){
+export const createCredentialService: (a:string, b:string) => Promise<number> = async (username: string, password: string): Promise<number> => {
+
+    if(!password && !username){
         throw new Error("Missing credentials");
     }
 
    const newCredential: ICredentials = {
-        id: credential.length + 1,
-        username: credentials.username,
-        password: credentials.password
+        id,
+        username,
+        password
         };
 
     credential.push(newCredential);
+    id++;
 
     return newCredential.id;
 }
 
-export const validateCredentialService = (credentials: CredentialCreateDTO): number | null => {
+export const validateCredentialService = async (username: string, password: string): Promise<number | null> => {
 
-    if(!credentials.password && !credentials.username){
+    if(!password && !username){
         throw new Error("Missing credentials");
     }
 
-    const foundCredential = credential.find(
-        (cred: ICredentials) =>
-            cred.username === credentials.username &&
-            cred.password === credentials.password
-    );
+    const usernameFound: ICredentials | undefined = credential.find((cred: ICredentials) => cred.username === username);
 
-    
-    return foundCredential ? foundCredential.id : null;
+    if(!usernameFound){
+        throw new Error("Invalid username");
+    }
+
+    const passwordFound: ICredentials | undefined = credential.find((cred: ICredentials) => cred.password === password);
+
+    if(!passwordFound){
+        throw new Error("Invalid username or password");
+
+    }
+
+    return usernameFound.id;
 }

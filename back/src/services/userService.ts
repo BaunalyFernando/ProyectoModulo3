@@ -1,4 +1,4 @@
-import { UserRegisterDTO } from "../dtos/UserDTO";
+import { UserDTO, UserRegisterDTO } from "../dtos/UserDTO";
 import { IUser } from "../interfaces/IUsers";
 import { createCredentialService } from "./credentialService";
 
@@ -21,36 +21,47 @@ const users: IUser[] = [
     },
 ];
 
-export const getUsersService = (): IUser[] => {
-     return users;
+let id: number = 1;
+
+export const getUsersService = (): UserDTO[] => {
+     return users.map((user: UserDTO) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email
+        }));
 }
 
-export const getUserByIdService = (id: number): IUser | null => {
+export const getUserByIdService = (id: number): UserDTO | null => {
     if(!id){
         throw new Error("Missing id");
     }
 
     const userFound = users.find((user: IUser) => user.id === id);
 
-    return userFound ? userFound : null;
+    if(!userFound){
+        throw new Error("User not found");
+    }
+
+    return {
+        id: userFound.id,
+        name: userFound.name,
+        email: userFound.email
+    };
 }
 
-export const createUserService = (user: UserRegisterDTO): void => {
+export const createUserService = async (user: UserRegisterDTO): Promise<void> => {
     if(!user.name || !user.email || !user.birthdate || !user.nDni || !user.password || !user.username){
         throw new Error("Missing user data");
     }
 
-    const createCredentials = createCredentialService({
-        username: user.username,
-        password: user.password
-    });
+    const createCredentials = await createCredentialService(user.username, user.password);
 
      if(!createCredentials){
          throw new Error("Error creating credentials");
      }
 
     const newUser: IUser = {
-        id: users.length + 1,
+        id: id++,
         name: user.name,
         email: user.email,
         birthdate: user.birthdate,
@@ -61,5 +72,6 @@ export const createUserService = (user: UserRegisterDTO): void => {
 
         users.push(newUser);
     
+        id++;
     
 }

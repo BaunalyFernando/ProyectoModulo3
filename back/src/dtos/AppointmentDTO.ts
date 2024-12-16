@@ -1,10 +1,6 @@
 export interface AppointmentRegisterDTO {
     date: Date;
     time: Date;
-    userId: string;
+    userId: number;
 }
 
-export enum Status {
-    Active= "active",
-    Canceled= "canceled"
-}
