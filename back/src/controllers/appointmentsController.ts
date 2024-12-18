@@ -6,7 +6,7 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
      try{
         const response = await getAppointmentsService();
            res.status(200).json({
-            message: "Appointments Controller",
+            message: "All appointments",
             data: response
             });
          } catch (error) {
@@ -24,12 +24,12 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
     try{
         const response = await getAppointmentByIdService(Number(id));
         res.status(200).json({ 
-         message: "Appointment By Id Controller" + id,
+         message: `Appointment by id ${id}`,
          data: response
          });
      } catch (error) {
         res.status(400).json({
-            message: "Error getting appointment by id",
+            message: `Error getting appointment with id ${id}`,
             data: error instanceof Error ? error.message : "unknown error"
      });
     
@@ -43,7 +43,7 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
      try{
         const response = await createAppointmentService({date, time, userId});
         res.status(201).json({
-            message: "Schedule Appointment Controller",
+            message: "Schedule Appointment",
             data: response
             });
          } catch (error) {
@@ -61,7 +61,7 @@ import { cancelAppointmentService, createAppointmentService, getAppointmentByIdS
     try{
         const response = await cancelAppointmentService(Number(id));
         res.status(200).json({
-            message: "Cancel Appointment Controller" + id,
+            message: `Cancel appointment with id ${id}`,
             data: response
             });
      } catch (error) {

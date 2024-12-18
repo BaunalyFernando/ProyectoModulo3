@@ -1,4 +1,6 @@
-import { CredentialCreateDTO } from '../dtos/CredentialDTO';
+import { EntityManager } from 'typeorm';
+import { CredentialModel } from '../config/data-source';
+import { Credential } from '../entities/Credential.entity';
 import { ICredentials } from '../interfaces/ICredentials';
 
 const credential: ICredentials[] = [
@@ -11,42 +13,40 @@ const credential: ICredentials[] = [
 
 let id: number = 1;
 
-export const createCredentialService: (a:string, b:string) => Promise<number> = async (username: string, password: string): Promise<number> => {
+export const createCredentialService: (entityManager: EntityManager, a: string, b:string) => Promise<Credential> = async (entityManager: EntityManager, username: string, password: string): Promise<Credential> => {
+
+    if(!username){
+        throw new Error("Missing username");
+    }
+
+    if(!password){
+        throw new Error("Missing password");
+    }
+
+    const credentials: Credential = entityManager.create(Credential, {
+      username,
+      password
+    })
+  
+    return await entityManager.save(credentials);
+  
+   
+  };
+
+export const validateCredentialService = async (username: string, password: string): Promise<Credential | null> => {
 
     if(!password && !username){
         throw new Error("Missing credentials");
     }
 
-   const newCredential: ICredentials = {
-        id,
-        username,
-        password
-        };
 
-    credential.push(newCredential);
-    id++;
+    const credentialFound = await CredentialModel.findOne({ where: { username: username, password: password }
+        });
 
-    return newCredential.id;
-}
-
-export const validateCredentialService = async (username: string, password: string): Promise<number | null> => {
-
-    if(!password && !username){
-        throw new Error("Missing credentials");
+    if(!credentialFound){
+        throw new Error("Invalid credentials");
     }
+    
 
-    const usernameFound: ICredentials | undefined = credential.find((cred: ICredentials) => cred.username === username);
-
-    if(!usernameFound){
-        throw new Error("Invalid username");
-    }
-
-    const passwordFound: ICredentials | undefined = credential.find((cred: ICredentials) => cred.password === password);
-
-    if(!passwordFound){
-        throw new Error("Invalid username or password");
-
-    }
-
-    return usernameFound.id;
+    return credentialFound;
 }
