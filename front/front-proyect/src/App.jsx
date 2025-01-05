@@ -1,6 +1,8 @@
 import { BrowserRouter } from "react-router-dom"
-import Home from "./views/Home"
-import MyAppointments from "./views/MyAppointments"
+import MyAppointments from "./views/MyAppointments/MyAppointments"
+import NavBar from "./components/NavBar"
+import Register from "./views/Register/Register"
+import Login from "./views/Login/Login"
 
 function App() {
  
@@ -8,8 +10,10 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Home />
+        <NavBar />
         <MyAppointments />
+        <Register />
+        <Login />
       </BrowserRouter>
       
     </>

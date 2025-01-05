@@ -1,33 +1,33 @@
-import { Request, Response, Router } from "express";
-import { getUserByIdController, getUsersController, loginUserController, registerUserController } from "../controllers/usersController";
+import { NextFunction, Request, Response, Router } from "express";
+import  usersControllers  from "../controllers/usersController";
 import { validateUserIdMiddleware, validateUserRegisterMiddleware, validateUserLoginMiddleware, checkUserExistsMiddleware } from "../middlewares/userMiddlewares";
 import { UserLoginDTO, UserRegisterDTO } from "../dtos/UserDTO";
 
 const usersRouter: Router = Router();
 
 
-usersRouter.get("/", (req: Request, res: Response) => getUsersController(req, res));
+usersRouter.get("/", (req: Request, res: Response, next: NextFunction) => usersControllers.getUsersController(req, res, next));
 
 
 usersRouter.get(
     "/:id",
     validateUserIdMiddleware,
     checkUserExistsMiddleware,
-    (req: Request<{ id: string }>, res: Response) => getUserByIdController(req, res)
+    (req: Request<{ id: string }>, res: Response, next: NextFunction) => usersControllers.getUserByIdController(req, res, next)
 );
 
 
 usersRouter.post(
     "/register",
     validateUserRegisterMiddleware,
-    (req: Request<unknown, unknown, UserRegisterDTO>, res: Response) => registerUserController(req, res)
+    (req: Request<unknown, unknown, UserRegisterDTO>, res: Response, next: NextFunction) => usersControllers.registerUserController(req, res, next)
 );
 
 
 usersRouter.post(
     "/login",
     validateUserLoginMiddleware,
-    (req: Request<unknown, unknown, UserLoginDTO>, res: Response) => loginUserController(req, res)
+    (req: Request<unknown, unknown, UserLoginDTO>, res: Response, next: NextFunction) => usersControllers.loginUserController(req, res, next)
 );
 
 export default usersRouter;

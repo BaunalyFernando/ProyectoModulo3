@@ -1,103 +1,60 @@
-import { Equal } from 'typeorm';
+
 import { AppointmentModel } from '../config/data-source';
 import { AppointmentDTO, AppointmentRegisterDTO } from "../dtos/AppointmentDTO";
-import { UserDTO } from "../dtos/UserDTO";
 import { Appointment } from "../entities/Appointment.entity";
-import { IAppointment, Status } from "../interfaces/IAppointments";
 import { getUserByIdService } from "./userService";
+import AppointmentsRepository from '../repositories/Appointment.Repository';
+import { Status } from '../interfaces/IAppointments';
+import { CustomError } from '../utils/customError';
 
-const appointments: IAppointment[] = [
-    {
-        id: 1,
-        date: new Date("2024-12-20"),
-        time: "10:00:00",
-        status: Status.Active,
-        userId: 1,
-    },
-    {
-        id: 2,
-        date: new Date("2024-12-21"),
-        time: "10:00:00",
-        status: Status.Cancelled,
-        userId: 2,
-    },
-    {
-        id: 3,
-        date: new Date("2024-12-22"),
-        time: "10:00:00",
-        status: Status.Cancelled,
-        userId: 1,
-    },
-];
-
-let id: number = 1;
-
-export const getAppointmentsService =  async (): Promise<AppointmentDTO[]> =>  {
-    const appointments: Appointment[] = await AppointmentModel.find();
-    return appointments;
+export const getAppointmentsService =  async (): Promise<Appointment[]> =>  {
+    const appointments =  await AppointmentModel.find();
+    
+    if(appointments.length > 0) return appointments;
+    else throw new CustomError(404,"No appointments found");
 }
 
-export const getAppointmentByIdService = async (id: number): Promise<Appointment | null> => {
-    if(!id){
-        throw new Error("Missing id");
-        }
-    
-    const appointmentFound = await AppointmentModel.findOneBy({id});
+export const getAppointmentByIdService = async (id: number): Promise<Appointment | null> => {   
+    const appointmentFound = await AppointmentsRepository.findOne({
+        where: { id }
+    });
 
     if(!appointmentFound){
-         throw new Error("Appointment not found");
+        throw new CustomError(404,"Appointment not found");
     }
-    
-    return appointmentFound;
+    else return appointmentFound;
 }
 
 export const createAppointmentService = async (appointment: AppointmentRegisterDTO): Promise<Appointment> => {
-    if(!appointment.date || !appointment.time || !appointment.userId){
-        throw new Error("Missing appointment data");
-    }
 
-    const duplicate = await AppointmentModel.findOne({
-        where: {
-            user: { id: appointment.userId }, 
-            date: Equal(appointment.date),     
-            time: appointment.time,           
-        },
-        relations: ["user"], 
-    });
-    
-    if (duplicate) {
-        throw new Error("Appointment already exists for this date and time");
-    }
+    await getUserByIdService(appointment.userId);
 
-    const user: UserDTO | null= await getUserByIdService(appointment.userId);
+    AppointmentsRepository.validateAllowAppointment(appointment.date, appointment.time);
+    AppointmentsRepository.validateExistingAppointment(appointment.userId, appointment.date, appointment.time);
 
-    if(!user){
-        throw new Error("User not found");
-    }
-
-    const newAppointment = AppointmentModel.create({
+    const newAppointment = AppointmentsRepository.create({
         date: appointment.date,
         time: appointment.time,
-        status: Status.Active,
-        user: {id: appointment.userId},
-    });
+        user: { id: appointment.userId },
+    })
 
-    return await AppointmentModel.save(newAppointment);
+
+    return await AppointmentsRepository.save(newAppointment);
+    
 }
 
-export const cancelAppointmentService = async (id: number): Promise<void> => {
+export const cancelAppointmentService = async (id: number): Promise<Appointment> => {
     if(!id){
-        throw new Error("Missing id");
+        throw new CustomError(404,"Missing id");
     }
 
     const appointmentFound = await getAppointmentByIdService(id);
 
     if(!appointmentFound){
-        throw new Error("Appointment not found");
+        throw new CustomError(404,`Appointment with id ${id} was not found`);
     }
 
     appointmentFound.status = Status.Cancelled;
     
-    await AppointmentModel.save(appointmentFound);
-
+    return await AppointmentModel.save(appointmentFound);
 }

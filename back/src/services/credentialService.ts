@@ -2,6 +2,7 @@ import { EntityManager } from 'typeorm';
 import { CredentialModel } from '../config/data-source';
 import { Credential } from '../entities/Credential.entity';
 import { ICredentials } from '../interfaces/ICredentials';
+import { CustomError } from '../utils/customError';
 
 const credential: ICredentials[] = [
     {
@@ -16,16 +17,16 @@ let id: number = 1;
 export const createCredentialService: (entityManager: EntityManager, a: string, b:string) => Promise<Credential> = async (entityManager: EntityManager, username: string, password: string): Promise<Credential> => {
 
     if(!username){
-        throw new Error("Missing username");
+        throw new CustomError(400, "Missing username");
     }
 
     if(!password){
-        throw new Error("Missing password");
+        throw new CustomError(400,"Missing password");
     }
 
     const credentials: Credential = entityManager.create(Credential, {
       username,
-      password
+      password,
     })
   
     return await entityManager.save(credentials);
@@ -33,20 +34,22 @@ export const createCredentialService: (entityManager: EntityManager, a: string, 
    
   };
 
-export const validateCredentialService = async (username: string, password: string): Promise<Credential | null> => {
+export const validateCredentialService = async (username: string, password: string): Promise<number> => {
 
     if(!password && !username){
-        throw new Error("Missing credentials");
+        throw new CustomError(400, "Missing credentials");
     }
 
 
-    const credentialFound = await CredentialModel.findOne({ where: { username: username, password: password }
+    const credentialFound: Credential | null = await CredentialModel.findOne(
+        { where: { username: username, password: password },
+        relations: ["user"]
         });
 
     if(!credentialFound){
-        throw new Error("Invalid credentials");
+        throw new CustomError(400, "Invalid credentials");
     }
     
 
-    return credentialFound;
+    return credentialFound.id;
 }
