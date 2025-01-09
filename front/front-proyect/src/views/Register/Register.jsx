@@ -1,9 +1,15 @@
-import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import validate from "./validate";
-import styles from "../../styles/Register.module.css";
+import validate from "./validateRegister";
+import styles from "./Register.module.css";
+import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
+import { useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 
 const Register = () => {
+
+    const {registerUser} = useContext(UserContext);
+
     const initialValues = {
         name: "",
         email: "",
@@ -14,18 +20,41 @@ const Register = () => {
     };
 
     const handleSubmit = async (values, { resetForm }) => {
-        axios.post("http://localhost:3001/users/register", values)
+            registerUser(values)
             .then((response) => {
                 if (response.status === 201) {
-                    alert("Usuario registrado exitosamente");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'User registered successfully!',
+                    })
+
                     resetForm();
                 }
             })
-            .catch((error) => {
-                if (error.response.status === 400) {
-                    alert(error.response.data.details);
+            .catch((err) =>{
+              
+                if(err.response.data.details.includes("email")){
+                    Swal.fire({
+                        icon: 'error',
+                        title: `El email ya está registrado con el mail: ${values.email}`,
+                        text: "Por favor, ingrese un email diferente.",
+                    })
+                } else if(err.response.data.details.includes("username")){
+                    Swal.fire({
+                        icon: 'error',
+                        title: `Ya existe un usuario registrado con el username: ${values.username}`,
+                        text: "Por favor, ingrese un nombre de usuario diferente.",
+                    })
+                    
+                } else if (err.response.data.details.includes("nDni")){
+                    Swal.fire({
+                        icon: 'error',
+                        title: `Ya existe un usuario registrado con el DNI: ${values.nDni}`,
+                        text: "Por favor, ingrese un DNI diferente.",
+                    })
                 }
-            });
+            })
+
     };
 
     return (
@@ -68,9 +97,17 @@ const Register = () => {
                             <Field name="password" type="password" className={styles.input} />
                             <ErrorMessage name="password" component="div" className={styles.error} />
                         </div>
-                        <button type="submit" className={styles.button}>
+                        <button 
+                            type="submit" 
+                            className={styles.button}
+                            
+                            >
                             Registrar
                         </button>
+                        <br />
+                        <label>
+                           Ya tienes cuenta? <Link to="/" className={styles.link}>Login</Link>
+                        </label>
                     </Form>
                 </Formik>
             </div>

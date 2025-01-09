@@ -10,7 +10,7 @@ const AppointmentsRepository = AppDataSource.getRepository(Appointment).extend({
      const [hours, minutes] = time.split(":").map(Number);
    
      if (isNaN(hours) || isNaN(minutes)) {
-       throw new Error("Invalid time format.");
+       throw new Error("Invalid time format");
      }
    
      

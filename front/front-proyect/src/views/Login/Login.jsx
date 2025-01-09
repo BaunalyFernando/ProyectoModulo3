@@ -1,28 +1,49 @@
+/* eslint-disable react/no-unescaped-entities */
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import axios from "axios";
 import validateLogin from "./validateLogin";
-import styles from "../../styles/Login.module.css";
+import styles from "./Login.module.css";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { UserContext } from "../../context/UserContext";
+import { useContext } from "react";
 
 const Login = () => {
+    const {loginUser} = useContext(UserContext);
+    const navigate = useNavigate();
+
     const initialValues = {
         username: "",
         password: "",
     };
+    
 
-    const handleSubmit = async (values, { resetForm }) => {
-     
-         axios.post("http://localhost:3001/users/login", values)
-         .then((response) => {
-            localStorage.setItem("user_id", response.data.data.user.id);
+    const handleSubmit = async (values) => {
+         loginUser(values)   
+         .then((response) => {                
                 if(response.status === 200){
-                alert(response.data.message);
-                
-                resetForm();
-                
+                    Swal.fire({
+                        icon: "success",
+                        title: "Usuario logueado correctamente.",
+                      });
+          
+                navigate("/home");
                 
             }})
-            .catch((error) => {
-                alert(error.response.data.message);
+            .catch((err) => {
+                if (err.response.data.code === 400) {
+                    Swal.fire({
+                      icon: "error",
+                      title: `${err.response.data.details}`,
+                      text: "Intentelo nuevamente.",
+                    });
+                  } else if (err.response.data.message) {
+                    Swal.fire({
+                      icon: "error",
+                      title: `${err.response.data.message}`,
+                      text: "Intentelo nuevamente.",
+                    });
+                  }
+        
             });
     };
 
@@ -37,7 +58,7 @@ const Login = () => {
                 >
                     <Form className={styles.form}>
                         <div className={styles.formGroup}>
-                            <label htmlFor="username">Nombre de Usuario</label>
+                            <label htmlFor="username">Username</label>
                             <Field
                                 name="username"
                                 type="text"
@@ -50,7 +71,7 @@ const Login = () => {
                             />
                         </div>
                         <div className={styles.formGroup}>
-                            <label htmlFor="password">Contraseña</label>
+                            <label htmlFor="password">Password</label>
                             <Field
                                 name="password"
                                 type="password"
@@ -63,8 +84,12 @@ const Login = () => {
                             />
                         </div>
                         <button type="submit" className={styles.button}>
-                            Iniciar Sesión
+                            Log In
                         </button>
+                        <br />
+                        <label>
+                           Don't have an account yet? <Link to="/register" className={styles.link}>Register here</Link>
+                        </label>
                     </Form>
                 </Formik>
             </div>

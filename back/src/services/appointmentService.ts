@@ -30,7 +30,7 @@ export const createAppointmentService = async (appointment: AppointmentRegisterD
     await getUserByIdService(appointment.userId);
 
     AppointmentsRepository.validateAllowAppointment(appointment.date, appointment.time);
-    AppointmentsRepository.validateExistingAppointment(appointment.userId, appointment.date, appointment.time);
+    await AppointmentsRepository.validateExistingAppointment(appointment.userId, appointment.date, appointment.time);
 
     const newAppointment = AppointmentsRepository.create({
         date: appointment.date,

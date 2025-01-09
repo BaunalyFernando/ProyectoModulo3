@@ -53,3 +53,4 @@ export const checkAppointmentExistsMiddleware = async (req: Request, res: Respon
         });
     }
 };
+
